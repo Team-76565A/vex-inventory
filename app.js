@@ -9,12 +9,12 @@ import {
 
 // 🔐 YOUR CONFIG
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBg-od6dL3TIu_haoo4Qlu3eNwuGLfdjlI",
+  authDomain: "vex-inventory-bbeb4.firebaseapp.com",
+  projectId: "vex-inventory-bbeb4",
+  storageBucket: "vex-inventory-bbeb4.firebasestorage.app",
+  messagingSenderId: "617237424016",
+  appId: "1:617237424016:web:6c51819bb3487b7d90f515"
 };
 
 const app = initializeApp(firebaseConfig);
