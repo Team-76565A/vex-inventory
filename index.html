@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>VEX Robotics Inventory</title>
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <h2>VEX Inventory Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+
+<header>
+  <h1>VEX Inventory Dashboard</h1>
+  <button id="logoutBtn">Logout</button>
+</header>
+
+<section class="stats">
+  <div>Total Parts: <span id="totalParts">0</span></div>
+  <div>Total Quantity: <span id="totalQuantity">0</span></div>
+  <div>Damaged: <span id="damagedCount">0</span></div>
+</section>
+
+<section class="form">
+  <h3>Add / Edit Part</h3>
+  <input id="partName" placeholder="Part Name">
+  <input id="sku" placeholder="SKU">
+  <input id="category" placeholder="Category">
+  <input id="subcategory" placeholder="Subcategory">
+  <input id="quantity" type="number" placeholder="Quantity">
+  <select id="condition">
+    <option>New</option>
+    <option>Used</option>
+    <option>Damaged</option>
+  </select>
+  <button id="addPartBtn">Save Part</button>
+</section>
+
+<section class="cut-form">
+  <h3>Log C-Channel Cut</h3>
+  <input id="cutPartId" placeholder="Part ID">
+  <input id="originalLength" type="number" placeholder="Original Hole Length">
+  <input id="cutStart" type="number" placeholder="Cut Start Hole">
+  <input id="cutEnd" type="number" placeholder="Cut End Hole">
+  <button id="logCutBtn">Log Cut</button>
+</section>
+
+<section>
+  <h3>Inventory</h3>
+  <div id="partsList"></div>
+</section>
+
+</div>
+
+</body>
+</html>
