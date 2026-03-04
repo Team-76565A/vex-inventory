@@ -51,4 +51,13 @@ button:hover {
   margin: 10px;
   padding: 12px;
   border-radius: 10px;
+  transition: 0.2s all;
+}
+
+.card:hover {
+  background: #334155;
+}
+
+.card.damaged {
+  border-left: 4px solid #ef4444;
 }
