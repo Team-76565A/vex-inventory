@@ -1,179 +1,469 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure VEX Inventory</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --primary: #e11d48; --bg: #f1f5f9; --text: #1e293b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-        
-        /* Login Overlay */
-        #auth-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(30, 41, 59, 0.95); z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .login-card { background: white; padding: 2.5rem; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        
-        /* Main App (Hidden by default) */
-        #app-content { display: none; }
-        
-        nav { background: #1e293b; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-        .card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem; }
-        
-        input, select, textarea { width: 100%; padding: 0.75rem; margin: 0.5rem 0 1rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        button.primary { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; }
-        button.outline { background: none; border: 1px solid #94a3b8; color: white; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 0.8rem; border-bottom: 1px solid #f1f5f9; }
-        .view { display: none; }
-        .view.active { display: block; }
-    </style>
+
+<title>VEX Inventory Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+:root{
+--bg:#0f172a;
+--panel:#1e293b;
+--card:#111827;
+--accent:#e11d48;
+--text:#f1f5f9;
+--muted:#94a3b8;
+}
+
+body{
+margin:0;
+display:flex;
+height:100vh;
+background:var(--bg);
+color:var(--text);
+font-family:Inter,system-ui;
+}
+
+/* Sidebar */
+
+.sidebar{
+width:240px;
+background:#020617;
+padding:20px;
+display:flex;
+flex-direction:column;
+}
+
+.sidebar h1{
+margin-bottom:30px;
+}
+
+.navbtn{
+padding:12px;
+margin-bottom:6px;
+border-radius:8px;
+cursor:pointer;
+color:var(--muted);
+}
+
+.navbtn:hover{
+background:var(--panel);
+color:white;
+}
+
+/* Main */
+
+.main{
+flex:1;
+padding:30px;
+overflow:auto;
+}
+
+.card{
+background:var(--panel);
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+}
+
+/* Tables */
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+td,th{
+padding:10px;
+border-bottom:1px solid #334155;
+}
+
+/* Inputs */
+
+input,select{
+padding:8px;
+border-radius:6px;
+border:1px solid #475569;
+background:#020617;
+color:white;
+}
+
+/* Buttons */
+
+button{
+padding:8px 14px;
+border-radius:6px;
+border:none;
+cursor:pointer;
+background:var(--accent);
+color:white;
+}
+
+/* Views */
+
+.view{
+display:none;
+}
+
+.view.active{
+display:block;
+}
+
+/* Modal */
+
+.modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:none;
+align-items:center;
+justify-content:center;
+}
+
+.modal-card{
+background:var(--panel);
+padding:25px;
+border-radius:12px;
+width:400px;
+}
+
+</style>
 </head>
+
 <body>
 
-<div id="auth-overlay">
-    <div class="login-card">
-        <h2 style="margin-top:0">VEX Inventory Login</h2>
-        <p style="color: #64748b; font-size: 0.9rem;">Please sign in to manage parts.</p>
-        <form id="login-form">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit" class="primary">Sign In</button>
-        </form>
-        <p id="login-error" style="color:red; font-size: 0.8rem; margin-top: 1rem; display:none"></p>
-    </div>
+<div class="sidebar">
+
+<h1>VEX PRO</h1>
+
+<div class="navbtn" onclick="showView('dashboard')">Dashboard</div>
+<div class="navbtn" onclick="showView('inventory')">Inventory</div>
+<div class="navbtn" onclick="showView('catalog')">Catalog</div>
+<div class="navbtn" onclick="showView('movements')">Movements</div>
+<div class="navbtn" onclick="showView('cutting')">Cutting</div>
+<div class="navbtn" onclick="showView('assemblies')">Assemblies</div>
+
 </div>
 
-<div id="app-content">
-    <nav>
-        <div style="font-weight:800">VEX PRO <span style="font-weight:400; color:#94a3b8">| SECURE</span></div>
-        <div style="display:flex; gap: 15px; align-items:center">
-            <button onclick="showView('inventory')" style="color:white; background:none; border:none; cursor:pointer">Inventory</button>
-            <button onclick="showView('reference')" style="color:white; background:none; border:none; cursor:pointer">Catalog</button>
-            <button class="outline" onclick="handleLogout()">Logout</button>
-        </div>
-    </nav>
+<div class="main">
 
-    <div class="container">
-        <div id="view-inventory" class="view active">
-            <div class="card">
-                <h3>Update Stock</h3>
-                <form id="stock-form">
-                    <select id="inv-part" required></select>
-                    <input type="number" id="inv-qty" placeholder="Quantity" required>
-                    <button type="submit" class="primary">Save Changes</button>
-                </form>
-            </div>
-            <div class="card">
-                <h3>Current Inventory</h3>
-                <table id="inv-table">
-                    <thead><tr><th>Part</th><th>Qty</th><th>Modified</th></tr></thead>
-                    <tbody id="inventory-list"></tbody>
-                </table>
-            </div>
-        </div>
+<input id="searchBar" placeholder="Search parts...">
 
-        <div id="view-reference" class="view">
-            <div class="card">
-                <h3>Parts Reference</h3>
-                <table id="ref-table">
-                    <thead><tr><th>SKU</th><th>Name</th><th>Category</th></tr></thead>
-                    <tbody id="reference-list"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<!-- DASHBOARD -->
+
+<div id="view-dashboard" class="view active">
+
+<div class="card">
+
+<h2>Overview</h2>
+
+<p>Total Parts: <span id="totalParts">0</span></p>
+<p>Total Stock: <span id="totalStock">0</span></p>
+<p>Low Stock: <span id="lowStock">0</span></p>
+
+</div>
+
+</div>
+
+<!-- INVENTORY -->
+
+<div id="view-inventory" class="view">
+
+<div class="card">
+
+<h2>Update Stock</h2>
+
+<select id="inv-part"></select>
+<input id="inv-qty" type="number" placeholder="Quantity">
+
+<button onclick="updateStock()">Save</button>
+
+</div>
+
+<div class="card">
+
+<h2>Inventory</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Part</th>
+<th>Qty</th>
+<th>Location</th>
+<th>Modified</th>
+</tr>
+</thead>
+
+<tbody id="inventoryTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- CATALOG -->
+
+<div id="view-catalog" class="view">
+
+<div class="card">
+
+<h2>Parts Catalog</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>SKU</th>
+<th>Name</th>
+<th>Category</th>
+</tr>
+</thead>
+
+<tbody id="catalogTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- MOVEMENTS -->
+
+<div id="view-movements" class="view">
+
+<div class="card">
+
+<h2>Stock Movements</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Part</th>
+<th>Type</th>
+<th>Qty</th>
+<th>Date</th>
+</tr>
+</thead>
+
+<tbody id="movementTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- CUTTING -->
+
+<div id="view-cutting" class="view">
+
+<div class="card">
+
+<h2>Cut Length</h2>
+
+<select id="cut-part"></select>
+<input id="cut-length" placeholder="Length">
+
+<button onclick="cutPart()">Cut</button>
+
+</div>
+
+</div>
+
+<!-- ASSEMBLIES -->
+
+<div id="view-assemblies" class="view">
+
+<div class="card">
+
+<h2>Create Assembly</h2>
+
+<input id="assembly-name" placeholder="Assembly name">
+
+<button onclick="createAssembly()">Create</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- MODAL -->
+
+<div id="editModal" class="modal">
+
+<div class="modal-card">
+
+<h3>Edit Inventory</h3>
+
+<input id="editQty">
+
+<button onclick="saveEdit()">Save</button>
+
+</div>
+
 </div>
 
 <script>
-    // --- SUPABASE CONFIG ---
-    const SB_URL = 'https://jfsdjqtnhjmujuzxuiix.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmc2RqcXRuaGptdWp1enh1aWl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MjU2MTUsImV4cCI6MjA4ODIwMTYxNX0.m4lkyrIRdkiiUZEneTA3oc8O14dRepbyFCOAogsSbGk';
-    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+const SB_URL = 'https://jfsdjqtnhjmujuzxuiix.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmc2RqcXRuaGptdWp1enh1aWl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MjU2MTUsImV4cCI6MjA4ODIwMTYxNX0.m4lkyrIRdkiiUZEneTA3oc8O14dRepbyFCOAogsSbGk';
 
-    // --- AUTH LOGIC ---
-    const loginForm = document.getElementById('login-form');
-    const authOverlay = document.getElementById('auth-overlay');
-    const appContent = document.getElementById('app-content');
+const supabaseClient=supabase.createClient(SB_URL,SB_KEY)
 
-    // Check if user is already logged in
-    async function checkUser() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
-            showApp();
-        }
-    }
+function showView(v){
 
-    loginForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        
-        if (error) {
-            document.getElementById('login-error').textContent = error.message;
-            document.getElementById('login-error').style.display = 'block';
-        } else {
-            showApp();
-        }
-    };
+document.querySelectorAll(".view").forEach(e=>e.classList.remove("active"))
 
-    async function handleLogout() {
-        await supabaseClient.auth.signOut();
-        location.reload();
-    }
+document.getElementById("view-"+v).classList.add("active")
 
-    function showApp() {
-        authOverlay.style.display = 'none';
-        appContent.style.display = 'block';
-        initData();
-    }
+}
 
-    // --- DATA LOGIC ---
-    function showView(v) {
-        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-        document.getElementById(`view-${v}`).classList.add('active');
-    }
+async function init(){
 
-    async function initData() {
-        const { data: parts } = await supabaseClient.from('parts').select('*').order('name');
-        if (parts) {
-            const select = document.getElementById('inv-part');
-            select.innerHTML = parts.map(p => `<option value="${p.id}">${p.sku} - ${p.name}</option>`).join('');
-            
-            document.getElementById('reference-list').innerHTML = parts.map(p => `
-                <tr><td>${p.sku}</td><td>${p.name}</td><td>${p.category}</td></tr>
-            `).join('');
-        }
-        fetchInventory();
-    }
+loadParts()
+loadInventory()
+loadMovements()
+loadStats()
 
-    async function fetchInventory() {
-        const { data } = await supabaseClient.from('inventory_details').select('*');
-        if (data) {
-            document.getElementById('inventory-list').innerHTML = data.map(i => `
-                <tr><td>${i.part_name}</td><td>${i.quantity}</td><td>${new Date(i.modified_at).toLocaleDateString()}</td></tr>
-            `).join('');
-        }
-    }
+}
 
-    document.getElementById('stock-form').onsubmit = async (e) => {
-        e.preventDefault();
-        const { error } = await supabaseClient.from('inventory').upsert({
-            part_id: document.getElementById('inv-part').value,
-            quantity: parseInt(document.getElementById('inv-qty').value),
-            modified_at: new Date().toISOString()
-        }, { onConflict: 'part_id' });
-        
-        if (!error) { fetchInventory(); e.target.reset(); }
-    };
+async function loadParts(){
 
-    checkUser();
+const {data}=await supabaseClient.from("parts").select("*")
+
+let options=""
+
+data.forEach(p=>{
+
+options+=`<option value="${p.id}">${p.sku} - ${p.name}</option>`
+
+})
+
+document.getElementById("inv-part").innerHTML=options
+document.getElementById("cut-part").innerHTML=options
+
+document.getElementById("catalogTable").innerHTML=data.map(p=>
+`<tr><td>${p.sku}</td><td>${p.name}</td><td>${p.category}</td></tr>`
+).join("")
+
+}
+
+async function loadInventory(){
+
+const {data}=await supabaseClient.from("inventory_details").select("*")
+
+document.getElementById("inventoryTable").innerHTML=data.map(i=>
+`<tr>
+<td>${i.part_name}</td>
+<td>${i.quantity}</td>
+<td>${i.location||"-"}</td>
+<td>${new Date(i.modified_at).toLocaleDateString()}</td>
+</tr>`
+).join("")
+
+}
+
+async function updateStock(){
+
+let part=document.getElementById("inv-part").value
+let qty=parseInt(document.getElementById("inv-qty").value)
+
+await supabaseClient
+.from("inventory")
+.upsert({
+part_id:part,
+quantity:qty,
+modified_at:new Date()
+},{onConflict:"part_id"})
+
+await supabaseClient
+.from("stock_movements")
+.insert({
+part_id:part,
+type:"UPDATE",
+quantity:qty,
+timestamp:new Date()
+})
+
+loadInventory()
+loadMovements()
+
+}
+
+async function loadMovements(){
+
+const {data}=await supabaseClient
+.from("stock_movements")
+.select("*")
+
+document.getElementById("movementTable").innerHTML=data.map(m=>
+`<tr>
+<td>${m.part_id}</td>
+<td>${m.type}</td>
+<td>${m.quantity}</td>
+<td>${new Date(m.timestamp).toLocaleDateString()}</td>
+</tr>`
+).join("")
+
+}
+
+async function cutPart(){
+
+let part=document.getElementById("cut-part").value
+let length=parseFloat(document.getElementById("cut-length").value)
+
+const {data}=await supabaseClient
+.from("cut_parts")
+.select("*")
+.eq("part_id",part)
+.single()
+
+let remaining=data.length_remaining-length
+
+await supabaseClient
+.from("cut_parts")
+.update({
+length_remaining:remaining
+})
+.eq("part_id",part)
+
+}
+
+async function loadStats(){
+
+const {data:parts}=await supabaseClient.from("parts").select("*")
+document.getElementById("totalParts").innerText=parts.length
+
+const {data:inventory}=await supabaseClient.from("inventory").select("*")
+
+let total=0
+inventory.forEach(i=>total+=i.quantity)
+
+document.getElementById("totalStock").innerText=total
+
+}
+
+document.getElementById("searchBar")
+.addEventListener("input",function(){
+
+let q=this.value.toLowerCase()
+
+document.querySelectorAll("tbody tr").forEach(r=>{
+r.style.display=r.innerText.toLowerCase().includes(q)?"":"none"
+})
+
+})
+
+init()
+
 </script>
+
 </body>
 </html>
